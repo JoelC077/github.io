@@ -1,0 +1,1111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chemistry Quiz — Joel's Revision Pack</title>
+<style>
+  :root {
+    --bg: #0f1424;
+    --panel: #181f36;
+    --panel2: #232c4a;
+    --accent: #4f8cff;
+    --accent-2: #f9c74f;
+    --good: #43d17a;
+    --bad: #ff5d6c;
+    --text: #e8ecf6;
+    --muted: #98a2c2;
+    --border: #2a335a;
+    --paul: #4f8cff;
+    --shelley: #f9c74f;
+    --rushmore: #43d17a;
+    --vicky: #ff7eb3;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 24px 18px 80px; }
+  header { margin-bottom: 18px; }
+  h1 { margin: 0 0 4px; font-size: 28px; letter-spacing: -0.5px; }
+  .sub { color: var(--muted); font-size: 14px; }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .mode-toggle { display: inline-flex; background: var(--panel2); border-radius: 10px; overflow: hidden; }
+  .mode-toggle button {
+    background: transparent; color: var(--muted); border: none;
+    padding: 9px 18px; font-weight: 600; cursor: pointer; font-size: 14px;
+  }
+  .mode-toggle button.active { background: var(--accent); color: white; }
+
+  .filter-row { margin-top: 10px; }
+  .chip-group { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .chip {
+    padding: 6px 11px; border-radius: 999px; background: var(--panel2);
+    border: 1px solid var(--border); color: var(--muted); cursor: pointer;
+    font-size: 13px; user-select: none; transition: all 0.15s;
+  }
+  .chip:hover { color: var(--text); }
+  .chip.active { background: var(--accent); border-color: var(--accent); color: white; }
+  .chip.lecturer-paul.active     { background: var(--paul);     border-color: var(--paul); }
+  .chip.lecturer-shelley.active  { background: var(--shelley);  border-color: var(--shelley); color: #1a1a1a; }
+  .chip.lecturer-rushmore.active { background: var(--rushmore); border-color: var(--rushmore); color: #1a1a1a; }
+  .chip.lecturer-vicky.active    { background: var(--vicky);    border-color: var(--vicky); }
+
+  .label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); font-weight: 700; }
+
+  .stats {
+    display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-top: 10px;
+  }
+  .stat {
+    background: var(--panel2); border-radius: 10px; padding: 10px 12px; text-align: center;
+  }
+  .stat .n { font-size: 22px; font-weight: 700; }
+  .stat .l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-top: 2px; }
+
+  .card-area {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 24px;
+    min-height: 320px;
+    position: relative;
+  }
+  .meta-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .tag {
+    font-size: 11px; padding: 3px 9px; border-radius: 999px;
+    background: var(--panel2); color: var(--muted); font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .tag.recall { background: rgba(79,140,255,0.18); color: #9ec3ff; }
+  .tag.applied { background: rgba(249,201,79,0.18); color: var(--accent-2); }
+  .tag.lec-paul     { background: rgba(79,140,255,0.18); color: #9ec3ff; }
+  .tag.lec-shelley  { background: rgba(249,201,79,0.18); color: var(--accent-2); }
+  .tag.lec-rushmore { background: rgba(67,209,122,0.18); color: var(--good); }
+  .tag.lec-vicky    { background: rgba(255,126,179,0.18); color: var(--vicky); }
+
+  .question { font-size: 20px; font-weight: 600; margin-bottom: 18px; line-height: 1.4; }
+
+  .answer-box {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-top: 14px;
+    font-size: 17px;
+    color: var(--text);
+    white-space: pre-line;
+  }
+  .answer-box.hidden { display: none; }
+
+  .options { display: grid; gap: 9px; margin-top: 8px; }
+  .option {
+    background: var(--panel2);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 13px 16px;
+    text-align: left;
+    cursor: pointer;
+    color: var(--text);
+    font-size: 15px;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .option:hover:not(:disabled) { border-color: var(--accent); background: #283163; }
+  .option:disabled { cursor: default; }
+  .option.correct { border-color: var(--good); background: rgba(67,209,122,0.18); }
+  .option.wrong { border-color: var(--bad); background: rgba(255,93,108,0.18); }
+  .option.reveal-correct { border-color: var(--good); }
+
+  .feedback { margin-top: 12px; font-weight: 600; min-height: 22px; }
+  .feedback.good { color: var(--good); }
+  .feedback.bad { color: var(--bad); }
+
+  .actions { margin-top: 22px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    background: var(--accent); color: white; border: none; border-radius: 10px;
+    padding: 11px 18px; font-weight: 600; font-size: 14px; cursor: pointer;
+    font-family: inherit;
+  }
+  .btn:hover { filter: brightness(1.1); }
+  .btn.secondary { background: var(--panel2); color: var(--text); border: 1px solid var(--border); }
+  .btn.good { background: var(--good); color: #0c2818; }
+  .btn.bad { background: var(--bad); color: white; }
+  .btn.ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+
+  .empty {
+    text-align: center; color: var(--muted); padding: 40px 20px;
+  }
+
+  .progress {
+    height: 6px; background: var(--panel2); border-radius: 999px;
+    overflow: hidden; margin-top: 8px;
+  }
+  .progress-bar {
+    height: 100%; background: linear-gradient(90deg, var(--accent), var(--good));
+    transition: width 0.3s;
+  }
+
+  .footer-help {
+    text-align: center; color: var(--muted); font-size: 12px; margin-top: 18px;
+  }
+
+  @media (max-width: 600px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .question { font-size: 18px; }
+    .wrap { padding: 16px 12px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Chemistry Quiz</h1>
+    <div class="sub">All 4 lecturers · ~220 questions · flashcard + multiple-choice modes</div>
+  </header>
+
+  <div class="panel">
+    <div class="controls">
+      <div class="mode-toggle">
+        <button id="mode-flashcard" class="active">Flashcards</button>
+        <button id="mode-quiz">Quiz</button>
+      </div>
+      <button id="shuffle-btn" class="btn secondary">Shuffle</button>
+      <button id="reset-btn" class="btn ghost">Reset session</button>
+    </div>
+
+    <div class="filter-row">
+      <div class="label">Filter by lecturer</div>
+      <div class="chip-group" id="lecturer-chips"></div>
+    </div>
+    <div class="filter-row">
+      <div class="label">Filter by topic</div>
+      <div class="chip-group" id="topic-chips"></div>
+    </div>
+    <div class="filter-row">
+      <div class="label">Difficulty</div>
+      <div class="chip-group" id="difficulty-chips">
+        <button class="chip active" data-diff="all">All</button>
+        <button class="chip" data-diff="recall">Recall only</button>
+        <button class="chip" data-diff="applied">Applied only</button>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="n" id="stat-pos">0/0</div><div class="l">Card</div></div>
+      <div class="stat"><div class="n" id="stat-correct">0</div><div class="l">Correct</div></div>
+      <div class="stat"><div class="n" id="stat-wrong">0</div><div class="l">Wrong</div></div>
+      <div class="stat"><div class="n" id="stat-acc">—</div><div class="l">Accuracy</div></div>
+    </div>
+    <div class="progress"><div class="progress-bar" id="progress" style="width:0%"></div></div>
+  </div>
+
+  <div class="card-area" id="card-area">
+    <div class="empty">Loading…</div>
+  </div>
+
+  <div class="footer-help">Click a card / tap "Show answer" in flashcard mode. Pick an option in quiz mode.</div>
+</div>
+
+<script>
+// =====================================================================
+// QUESTION BANK — built from your OneNote PDFs
+// type: "recall" or "applied"
+// =====================================================================
+const QUESTIONS = [
+  // ============= PAUL: HYBRIDISATION =============
+  { lec: "Paul", topic: "Hybridisation", type: "recall",
+    q: "What does it mean for orbitals to be 'degenerate'?",
+    a: "They have the same energy (usually with different shapes/orientations).",
+    distractors: ["They are unstable and decay quickly.", "They are full of electrons.", "They overlap with another atom's orbitals."] },
+  { lec: "Paul", topic: "Hybridisation", type: "recall",
+    q: "How many types of d orbitals are there, and are they degenerate?",
+    a: "5 types (d_xy, d_yz, d_xz, d_x²-y², d_z²) — all 5 are degenerate.",
+    distractors: ["3 types — they are degenerate.", "5 types — they all have different energies.", "7 types — they are degenerate."] },
+  { lec: "Paul", topic: "Hybridisation", type: "applied",
+    q: "Using the formula 2n², how many electrons can shell n=4 hold?",
+    a: "32 electrons (2 × 4² = 32).",
+    distractors: ["16 electrons.", "18 electrons.", "8 electrons."] },
+  { lec: "Paul", topic: "Hybridisation", type: "recall",
+    q: "What kind of orbital overlap forms a sigma (σ) bond, and what kind forms a pi (π) bond?",
+    a: "Sigma = end-to-end overlap. Pi = side-to-side overlap (only p orbitals).",
+    distractors: ["Sigma = side-to-side, pi = end-to-end.", "Sigma = single bond, pi = double bond.", "Sigma = ionic, pi = covalent."] },
+  { lec: "Paul", topic: "Hybridisation", type: "recall",
+    q: "Can hybrid orbitals form pi bonds?",
+    a: "No. Hybrid orbitals can only form sigma bonds. Untouched p orbitals form pi bonds.",
+    distractors: ["Yes, they can form both.", "Only sp³ hybrids form pi bonds.", "Only sp hybrids form pi bonds."] },
+  { lec: "Paul", topic: "Hybridisation", type: "applied",
+    q: "What is the hybridisation of carbon in CH₄?",
+    a: "sp³ — 4 bonded atoms + 0 lone pairs = 4 → sp³, tetrahedral.",
+    distractors: ["sp²", "sp", "sp³d"] },
+  { lec: "Paul", topic: "Hybridisation", type: "applied",
+    q: "What is the hybridisation of oxygen in H₂O?",
+    a: "sp³ — 2 bonded atoms + 2 lone pairs = 4 → sp³.",
+    distractors: ["sp²", "sp", "sp³d²"] },
+  { lec: "Paul", topic: "Hybridisation", type: "applied",
+    q: "What is the hybridisation of phosphorus in PCl₅?",
+    a: "sp³d¹ — 5 bonded atoms + 0 lone pairs = 5.",
+    distractors: ["sp³", "sp³d²", "sp²"] },
+  { lec: "Paul", topic: "Hybridisation", type: "recall",
+    q: "Why can period 2 elements (C, N, O, F) only do sp, sp², or sp³ hybridisation?",
+    a: "They only have s and p orbitals available in their valence shell — no d orbitals.",
+    distractors: ["They are too small to bond more than 4 times.", "Their electrons cannot be promoted.", "They are noble-gas like."] },
+  { lec: "Paul", topic: "Hybridisation", type: "recall",
+    q: "In sp² hybridisation, what are the % characters?",
+    a: "33% s and 67% p.",
+    distractors: ["50% s and 50% p.", "25% s and 75% p.", "67% s and 33% p."] },
+  { lec: "Paul", topic: "Hybridisation", type: "recall",
+    q: "Is rotation around a single sigma bond allowed?",
+    a: "Yes — free rotation is possible around a single sigma bond.",
+    distractors: ["No, rotation is forbidden.", "Only around C–C bonds.", "Only at high temperatures."] },
+  { lec: "Paul", topic: "Hybridisation", type: "applied",
+    q: "How many sigma and pi bonds are in a triple bond?",
+    a: "1 sigma + 2 pi.",
+    distractors: ["2 sigma + 1 pi.", "3 sigma + 0 pi.", "0 sigma + 3 pi."] },
+
+  // ============= PAUL: MOT =============
+  { lec: "Paul", topic: "MOT", type: "recall",
+    q: "In MOT, what's the difference between in-phase and out-of-phase orbital combinations?",
+    a: "In-phase = constructive → bonding orbital (lower energy). Out-of-phase = destructive → anti-bonding orbital (higher energy).",
+    distractors: ["In-phase = anti-bonding, out-of-phase = bonding.", "Both create bonding orbitals.", "There's no difference — it's the same wave."] },
+  { lec: "Paul", topic: "MOT", type: "recall",
+    q: "Name two phenomena MOT can explain that VBT cannot.",
+    a: "Why some compounds are coloured; why some unpaired-electron substances are stable; the true nature of resonance; semiconductor behaviour. (Any two.)",
+    distractors: ["Why hydrogen burns; why metals conduct electricity.", "How catalysts work; how enzymes function.", "Why ice floats; why water is polar."] },
+  { lec: "Paul", topic: "MOT", type: "recall",
+    q: "What is a nodal plane?",
+    a: "A region where there is zero probability of finding an electron. Anti-bonding orbitals have a nodal plane between the nuclei.",
+    distractors: ["The middle of any covalent bond.", "Where two atoms meet.", "Any region containing one electron."] },
+  { lec: "Paul", topic: "MOT", type: "recall",
+    q: "What do HOMO and LUMO stand for?",
+    a: "HOMO = Highest Occupied Molecular Orbital. LUMO = Lowest Unoccupied Molecular Orbital.",
+    distractors: ["High-Order / Low-Order Mass Orbital.", "Higher / Lower Outer Molecular Orbital.", "Hybrid Orbital / Lone Orbital."] },
+  { lec: "Paul", topic: "MOT", type: "recall",
+    q: "Where do reactions happen, in MOT terms?",
+    a: "Between the HOMO of one molecule (nucleophile, donor) and the LUMO of another (electrophile, acceptor).",
+    distractors: ["Between the LUMO of both molecules.", "Between the HOMO of both molecules.", "Between any two random orbitals."] },
+  { lec: "Paul", topic: "MOT", type: "applied",
+    q: "A diatomic species has 8 electrons in bonding orbitals and 4 in anti-bonding. What is the bond order?",
+    a: "Bond order = (8 − 4) / 2 = 2 (double bond).",
+    distractors: ["1 (single).", "3 (triple).", "4 (quadruple)."] },
+  { lec: "Paul", topic: "MOT", type: "applied",
+    q: "A diatomic species has 8 bonding electrons and 2 anti-bonding electrons. What is the bond order?",
+    a: "Bond order = (8 − 2) / 2 = 3 (triple bond).",
+    distractors: ["1.", "2.", "0."] },
+  { lec: "Paul", topic: "MOT", type: "recall",
+    q: "What does a bond order of 0 mean?",
+    a: "No bond forms — the molecule is unstable / doesn't exist.",
+    distractors: ["A perfect single bond.", "Maximum stability.", "An ionic bond."] },
+  { lec: "Paul", topic: "MOT", type: "recall",
+    q: "How are bond length and bond strength related?",
+    a: "Shorter bonds are stronger. Longer bonds are weaker.",
+    distractors: ["Longer bonds are stronger.", "Length and strength are unrelated.", "Only triple bonds follow this rule."] },
+  { lec: "Paul", topic: "MOT", type: "recall",
+    q: "Going down the halogens (H–F, H–Cl, H–Br, H–I), how does bond strength change?",
+    a: "It DECREASES — H–F is the strongest, H–I is the weakest. Bonds get longer and weaker down the group.",
+    distractors: ["It increases.", "It stays the same.", "It increases then decreases."] },
+  { lec: "Paul", topic: "MOT", type: "applied",
+    q: "What is the bond order of each C–O bond in the carbonate ion CO₃²⁻?",
+    a: "4/3 — the three bonds are identical due to resonance/delocalisation.",
+    distractors: ["1.", "2.", "1/3."] },
+  { lec: "Paul", topic: "MOT", type: "recall",
+    q: "Why does delocalisation stabilise a molecule?",
+    a: "Spreading electron density over a wider area lowers the molecule's overall energy → more stable.",
+    distractors: ["It increases the molecule's energy.", "It strengthens individual bonds.", "It removes lone pairs."] },
+
+  // ============= PAUL: MOLECULAR FORCES =============
+  { lec: "Paul", topic: "Molecular forces", type: "recall",
+    q: "Name the 3 types of intramolecular bonds.",
+    a: "Ionic, covalent, metallic.",
+    distractors: ["Van der Waals, dipole-dipole, hydrogen.", "Sigma, pi, dative.", "Polar, non-polar, ionic."] },
+  { lec: "Paul", topic: "Molecular forces", type: "recall",
+    q: "Order the 3 intermolecular forces from weakest to strongest.",
+    a: "Van der Waals < Permanent dipole-dipole < Hydrogen bonding.",
+    distractors: ["Hydrogen bonding < dipole-dipole < Van der Waals.", "Ionic < covalent < metallic.", "Dipole-dipole < hydrogen bonding < Van der Waals."] },
+  { lec: "Paul", topic: "Molecular forces", type: "recall",
+    q: "Where do Van der Waals forces exist?",
+    a: "In ALL molecules — polar or non-polar.",
+    distractors: ["Only in polar molecules.", "Only in molecules with hydrogen.", "Only in noble gases."] },
+  { lec: "Paul", topic: "Molecular forces", type: "applied",
+    q: "Why does boiling point usually increase as you go down a group of similar molecules?",
+    a: "More electrons → stronger Van der Waals forces → more energy needed to separate molecules.",
+    distractors: ["More protons in the nucleus.", "Smaller atoms pack more tightly.", "Higher electronegativity at the bottom."] },
+  { lec: "Paul", topic: "Molecular forces", type: "recall",
+    q: "What conditions are needed for hydrogen bonding to occur?",
+    a: "An H atom bonded directly to N, O, or F on one molecule, and a lone pair on N, O, or F on another molecule.",
+    distractors: ["Any H atom in any molecule.", "An H bonded to a metal.", "Two highly electronegative atoms touching."] },
+  { lec: "Paul", topic: "Molecular forces", type: "applied",
+    q: "Is CO₂ a polar molecule? Why or why not?",
+    a: "No — CO₂ is non-polar. The two C=O dipoles are equal and opposite, so they cancel out (linear/symmetric shape).",
+    distractors: ["Yes — both oxygens pull electrons.", "Yes — it has a dipole moment.", "No — there are no polar bonds in CO₂."] },
+  { lec: "Paul", topic: "Molecular forces", type: "applied",
+    q: "Is H₂O polar? Why?",
+    a: "Yes — H₂O is bent, so the two O–H dipoles do NOT cancel; they add together to give a strong overall dipole.",
+    distractors: ["No — the dipoles cancel.", "Yes — but only because of hydrogen bonding.", "No — water is symmetric like CO₂."] },
+  { lec: "Paul", topic: "Molecular forces", type: "recall",
+    q: "What are the units of dipole moment?",
+    a: "Debye (D).",
+    distractors: ["Joules (J).", "Coulombs (C).", "Newtons (N)."] },
+  { lec: "Paul", topic: "Molecular forces", type: "recall",
+    q: "What is the formula for dipole moment?",
+    a: "μ = q × r (charge × distance between charges).",
+    distractors: ["μ = q + r.", "μ = q / r.", "μ = q² × r²."] },
+  { lec: "Paul", topic: "Molecular forces", type: "recall",
+    q: "What is the '2nd rule of chemistry' regarding solubility?",
+    a: "Like dissolves like — polar dissolves in polar; non-polar dissolves in non-polar.",
+    distractors: ["Opposites dissolve.", "Acid dissolves base.", "Hot dissolves cold."] },
+
+  // ============= PAUL: SPECTROSCOPY =============
+  { lec: "Paul", topic: "Spectroscopy", type: "recall",
+    q: "Write the equation that breaks molecular energy into its three components.",
+    a: "E_molecule = E_electronic + E_vibrational + E_rotational.",
+    distractors: ["E_molecule = E_kinetic + E_potential.", "E_molecule = mc².", "E_molecule = ½mv²."] },
+  { lec: "Paul", topic: "Spectroscopy", type: "recall",
+    q: "Which type of spectroscopy probes electronic transitions?",
+    a: "UV-Vis spectroscopy (HOMO → LUMO).",
+    distractors: ["IR spectroscopy.", "NMR spectroscopy.", "Microwave spectroscopy."] },
+  { lec: "Paul", topic: "Spectroscopy", type: "recall",
+    q: "Write the relationships between energy, frequency, and wavelength.",
+    a: "E = hν and c = νλ. Energy ∝ frequency, Energy ∝ 1/wavelength.",
+    distractors: ["E = mc² and c = νλ.", "E = hν and ν = mc.", "E = ½mv² only."] },
+  { lec: "Paul", topic: "Spectroscopy", type: "applied",
+    q: "Which has more energy: UV light (short wavelength) or IR light (long wavelength)?",
+    a: "UV — shorter wavelength = higher frequency = higher energy.",
+    distractors: ["IR — longer waves carry more energy.", "They have equal energy.", "Depends on intensity."] },
+  { lec: "Paul", topic: "Spectroscopy", type: "recall",
+    q: "What is a chromophore?",
+    a: "The part of a molecule responsible for absorbing visible light (giving it colour).",
+    distractors: ["A type of free radical.", "A nucleus that absorbs IR.", "A spinning electron."] },
+  { lec: "Paul", topic: "Spectroscopy", type: "recall",
+    q: "Bathochromic shift — to longer or shorter wavelength? What's the other name?",
+    a: "Longer wavelength (lower energy). Also called RED shift.",
+    distractors: ["Shorter wavelength; also called blue shift.", "Longer wavelength; also called blue shift.", "Same wavelength; called grey shift."] },
+  { lec: "Paul", topic: "Spectroscopy", type: "recall",
+    q: "Hypsochromic shift — to longer or shorter wavelength?",
+    a: "Shorter wavelength (higher energy). Also called BLUE shift.",
+    distractors: ["Longer wavelength; called red shift.", "Shorter wavelength; called red shift.", "No change in wavelength."] },
+  { lec: "Paul", topic: "Spectroscopy", type: "recall",
+    q: "What does IR spectroscopy probe?",
+    a: "Bond vibrations.",
+    distractors: ["Electronic transitions.", "Nuclear spin.", "Molecular rotation."] },
+  { lec: "Paul", topic: "Spectroscopy", type: "recall",
+    q: "What is the typical IR wavenumber range for an O–H bond stretch?",
+    a: "About 3200–3500 cm⁻¹.",
+    distractors: ["About 1700 cm⁻¹.", "About 200 cm⁻¹.", "About 500 cm⁻¹."] },
+  { lec: "Paul", topic: "Spectroscopy", type: "recall",
+    q: "What is the typical IR wavenumber for a C=O stretch?",
+    a: "About 1700 cm⁻¹.",
+    distractors: ["About 3300 cm⁻¹.", "About 600 cm⁻¹.", "About 4000 cm⁻¹."] },
+  { lec: "Paul", topic: "Spectroscopy", type: "applied",
+    q: "An NMR peak is split into 4 (a quartet). How many neighbouring H atoms are there?",
+    a: "3 neighbouring H atoms (n+1 rule: 4 peaks = n+1 → n = 3).",
+    distractors: ["4 neighbouring H atoms.", "2 neighbouring H atoms.", "1 neighbouring H atom."] },
+  { lec: "Paul", topic: "Spectroscopy", type: "recall",
+    q: "What are the 3 steps of a free radical chain reaction?",
+    a: "Initiation → Propagation → Termination.",
+    distractors: ["Start → Middle → End.", "Reactants → Intermediate → Products.", "Activation → Reaction → Quench."] },
+  { lec: "Paul", topic: "Spectroscopy", type: "recall",
+    q: "What does the equation M⁰ + hν → M* describe?",
+    a: "A molecule absorbing light energy and going from ground state (M⁰) to an excited state (M*). Not yet a free radical.",
+    distractors: ["Photolysis cleaving a bond into two radicals.", "A radical recombining at termination.", "An ionic dissociation."] },
+  { lec: "Paul", topic: "Spectroscopy", type: "recall",
+    q: "In a transition metal complex, which is the Lewis acid and which is the Lewis base?",
+    a: "Metal = Lewis acid (electron acceptor). Ligand = Lewis base (electron donor).",
+    distractors: ["Metal = Lewis base, Ligand = Lewis acid.", "Both are Lewis acids.", "Neither — they're both bases."] },
+  { lec: "Paul", topic: "Spectroscopy", type: "recall",
+    q: "In an OCTAHEDRAL transition metal complex, how do the d orbitals split?",
+    a: "Two higher (e_g): d_x²-y², d_z². Three lower (t_2g): d_xy, d_yz, d_xz.",
+    distractors: ["The opposite — eg low, t2g high.", "All five stay degenerate.", "Three go higher and two go lower."] },
+  { lec: "Paul", topic: "Spectroscopy", type: "recall",
+    q: "Why do transition metal complexes have colour?",
+    a: "Electrons jump between split d orbital levels, absorbing visible light at specific wavelengths.",
+    distractors: ["They contain a chromophore from the ligand.", "Their nuclei vibrate in the visible range.", "The ligands themselves are coloured."] },
+
+  // ============= PAUL: VSEPR =============
+  { lec: "Paul", topic: "VSEPR", type: "recall",
+    q: "What does VSEPR stand for, and what's the basic idea?",
+    a: "Valence Shell Electron Pair Repulsion — electron pairs around a central atom push each other as far apart as possible.",
+    distractors: ["Valence Shell Electron Pair Reaction — electrons combine to form bonds.", "Vertical Symmetry Equation for Predicted Repulsion.", "Valence Shell Energy Pair Reduction."] },
+  { lec: "Paul", topic: "VSEPR", type: "recall",
+    q: "In the AXE model, what do A, X, and E stand for?",
+    a: "A = central atom. X = number of bonding groups. E = number of lone pair groups.",
+    distractors: ["A = anion, X = cation, E = electron.", "A = atom, X = bonds total, E = electrons.", "A = angle, X = vertices, E = edges."] },
+  { lec: "Paul", topic: "VSEPR", type: "recall",
+    q: "Order the 3 repulsion strengths from greatest to least.",
+    a: "Lone pair–Lone pair > Lone pair–Bonding pair > Bonding pair–Bonding pair.",
+    distractors: ["BP-BP > LP-BP > LP-LP.", "LP-LP > BP-BP > LP-BP.", "All are equal."] },
+  { lec: "Paul", topic: "VSEPR", type: "applied",
+    q: "Why is the H–N–H bond angle in NH₃ (107°) smaller than the H–C–H angle in CH₄ (109.5°)?",
+    a: "Because NH₃ has one lone pair on nitrogen, which takes up more space than a bonding pair and squeezes the H–N–H bonds smaller.",
+    distractors: ["Nitrogen is smaller than carbon.", "NH₃ has stronger bonds.", "CH₄ has more lone pairs."] },
+  { lec: "Paul", topic: "VSEPR", type: "applied",
+    q: "What is the AXE formula and shape for H₂O?",
+    a: "AX₂E₂ — bent / angular shape (~104.5°).",
+    distractors: ["AX₂ — linear.", "AX₃E — trigonal pyramidal.", "AX₄ — tetrahedral."] },
+  { lec: "Paul", topic: "VSEPR", type: "applied",
+    q: "What is the AXE formula and shape for CH₄?",
+    a: "AX₄ — tetrahedral (109.5°).",
+    distractors: ["AX₃E — trigonal pyramidal.", "AX₄E — see-saw.", "AX₂E₂ — bent."] },
+  { lec: "Paul", topic: "VSEPR", type: "applied",
+    q: "What is the AXE formula and shape for NH₃?",
+    a: "AX₃E — trigonal pyramidal (~107°).",
+    distractors: ["AX₃ — trigonal planar.", "AX₂E₂ — bent.", "AX₄ — tetrahedral."] },
+  { lec: "Paul", topic: "VSEPR", type: "applied",
+    q: "Predict the shape of BF₃.",
+    a: "AX₃ — trigonal planar (120°). Boron has no lone pairs.",
+    distractors: ["Trigonal pyramidal.", "Tetrahedral.", "Linear."] },
+  { lec: "Paul", topic: "VSEPR", type: "applied",
+    q: "Predict the shape of SF₆.",
+    a: "AX₆ — octahedral (90°).",
+    distractors: ["Trigonal bipyramidal.", "Pentagonal bipyramidal.", "Square planar."] },
+
+  // ============= SHELLEY: BOND ENERGY =============
+  { lec: "Shelley", topic: "Bond Energy", type: "recall",
+    q: "What is bond dissociation energy (or 'bond energy')?",
+    a: "The amount of energy required to break a bond — a measure of bond strength. Higher bond energy = stronger bond.",
+    distractors: ["The energy released when a bond forms.", "The energy stored inside an atom.", "The kinetic energy of bonded atoms."] },
+  { lec: "Shelley", topic: "Bond Energy", type: "recall",
+    q: "Is bond breaking endothermic or exothermic?",
+    a: "Endothermic — bond breaking REQUIRES energy.",
+    distractors: ["Exothermic — bond breaking releases energy.", "Neither — energy stays the same.", "Depends on the bond type."] },
+  { lec: "Shelley", topic: "Bond Energy", type: "recall",
+    q: "Is bond formation endothermic or exothermic?",
+    a: "Exothermic — making bonds RELEASES energy.",
+    distractors: ["Endothermic — bond formation absorbs energy.", "Neither — bond formation is energy-neutral.", "Always 0."] },
+  { lec: "Shelley", topic: "Bond Energy", type: "applied",
+    q: "How do you estimate enthalpy change ΔH using bond energies?",
+    a: "ΔH = (energy to break reactant bonds) − (energy released forming product bonds).",
+    distractors: ["ΔH = (product bonds) − (reactant bonds), all positive.", "ΔH = (reactant bonds) + (product bonds).", "ΔH = always equals the sum of all bond energies."] },
+
+  // ============= SHELLEY: ENERGY =============
+  { lec: "Shelley", topic: "Energy", type: "recall",
+    q: "What is the difference between kinetic and potential energy?",
+    a: "Kinetic = movement energy (waves, atoms, objects in motion). Potential = stored energy (e.g., chemical energy in bonds).",
+    distractors: ["Kinetic is for solids; potential is for liquids.", "Kinetic is heat; potential is light.", "They are the same."] },
+  { lec: "Shelley", topic: "Energy", type: "recall",
+    q: "What does 'activation energy' mean?",
+    a: "The minimum amount of energy required to start a reaction.",
+    distractors: ["The total energy released by a reaction.", "The energy of the products.", "The energy lost as heat."] },
+  { lec: "Shelley", topic: "Energy", type: "recall",
+    q: "Endothermic vs exothermic — what is the sign of ΔH for each?",
+    a: "Exothermic = NEGATIVE ΔH (releases energy). Endothermic = POSITIVE ΔH (takes in energy).",
+    distractors: ["Exothermic = +ΔH; endothermic = −ΔH.", "Both are positive.", "Both are negative."] },
+  { lec: "Shelley", topic: "Energy", type: "applied",
+    q: "If a reaction has ΔH = +120 kJ/mol, is it exothermic or endothermic?",
+    a: "Endothermic — positive ΔH means heat is absorbed.",
+    distractors: ["Exothermic — positive ΔH means heat is released.", "Neither — ΔH must be negative for a reaction.", "Cannot tell from ΔH alone."] },
+  { lec: "Shelley", topic: "Energy", type: "recall",
+    q: "What does ΔH represent on a reaction energy diagram?",
+    a: "The difference in energy between reactants and products (heat absorbed or released).",
+    distractors: ["The activation energy.", "The total bond energy of products.", "The kinetic energy of molecules."] },
+
+  // ============= SHELLEY: EQUILIBRIUM =============
+  { lec: "Shelley", topic: "Equilibrium", type: "recall",
+    q: "What does the equilibrium constant Kc tell you?",
+    a: "Whether the equilibrium mixture is mostly products (high Kc) or mostly reactants (low Kc).",
+    distractors: ["The rate of the forward reaction.", "The activation energy.", "The temperature of the reaction."] },
+  { lec: "Shelley", topic: "Equilibrium", type: "applied",
+    q: "For the homogeneous reaction aA + bB ⇌ cC + dD, write the expression for Kc.",
+    a: "Kc = ([C]^c × [D]^d) / ([A]^a × [B]^b).",
+    distractors: ["Kc = ([A] × [B]) / ([C] × [D]).", "Kc = [A] + [B] − [C] − [D].", "Kc = [C] × [D] × [A] × [B]."] },
+  { lec: "Shelley", topic: "Equilibrium", type: "applied",
+    q: "For H₂O(g) + C(s) ⇌ CO(g) + H₂(g), how do you write Kc?",
+    a: "Kc = [CO][H₂] / [H₂O]. Solids are NOT included in heterogeneous Kc expressions.",
+    distractors: ["Kc = [CO][H₂] / ([H₂O][C]).", "Kc = [CO][H₂][C] / [H₂O].", "Kc = [H₂O][C] / ([CO][H₂])."] },
+  { lec: "Shelley", topic: "Equilibrium", type: "recall",
+    q: "What is the difference between homogeneous and heterogeneous equilibria?",
+    a: "Homogeneous = all species in the same state. Heterogeneous = species in more than one state (and solids are excluded from Kc).",
+    distractors: ["Homogeneous = all gases; heterogeneous = all liquids.", "Homogeneous = reversible; heterogeneous = irreversible.", "There's no difference."] },
+
+  // ============= SHELLEY: MATTER =============
+  { lec: "Shelley", topic: "Matter", type: "recall",
+    q: "What is the kinetic theory of matter?",
+    a: "Everything is composed of matter that is constantly in motion.",
+    distractors: ["Matter can never move on its own.", "Matter is made of waves only.", "Matter is purely energy."] },
+  { lec: "Shelley", topic: "Matter", type: "recall",
+    q: "Compare solids, liquids, and gases for shape and volume.",
+    a: "Solid = fixed shape & volume. Liquid = fixed volume but no fixed shape. Gas = no fixed shape or volume.",
+    distractors: ["All three have fixed shape and volume.", "Solid and gas have fixed volume; liquid does not.", "Liquid is fixed shape; solid and gas are not."] },
+  { lec: "Shelley", topic: "Matter", type: "recall",
+    q: "Which states of matter are compressible?",
+    a: "Only gases. Solids and liquids are essentially incompressible.",
+    distractors: ["All three are compressible.", "Only solids.", "Only liquids and gases."] },
+  { lec: "Shelley", topic: "Matter", type: "recall",
+    q: "What is Le Chatelier's Principle?",
+    a: "If a dynamic equilibrium is disturbed by changing conditions, the position of equilibrium shifts to counteract the change.",
+    distractors: ["Equilibrium always favours products at high temperature.", "All reactions go to completion.", "Adding catalyst shifts equilibrium toward products."] },
+  { lec: "Shelley", topic: "Matter", type: "applied",
+    q: "If you decrease the volume of a container holding a gas at equilibrium, what happens to the pressure?",
+    a: "Pressure INCREASES — molecules are more tightly compacted.",
+    distractors: ["Pressure decreases.", "Pressure stays the same.", "Pressure becomes zero."] },
+
+  // ============= SHELLEY: REDOX =============
+  { lec: "Shelley", topic: "Redox", type: "recall",
+    q: "What does OILRIG stand for?",
+    a: "Oxidation Is Loss (of electrons), Reduction Is Gain (of electrons).",
+    distractors: ["Oxidation Is Greater, Reduction Is Lesser.", "Oxygen In Lungs, Respiration In Gas.", "Oxygen Is Lost, Reduction Is Gained."] },
+  { lec: "Shelley", topic: "Redox", type: "recall",
+    q: "Define 'reducing agent'.",
+    a: "A substance that DONATES electrons (and is itself oxidised).",
+    distractors: ["A substance that gains electrons.", "A substance that breaks down water.", "A substance that lowers temperature."] },
+  { lec: "Shelley", topic: "Redox", type: "recall",
+    q: "Define 'oxidising agent'.",
+    a: "A substance that ACCEPTS electrons (and is itself reduced).",
+    distractors: ["A substance that loses electrons.", "A substance that contains oxygen.", "A substance that releases H⁺."] },
+  { lec: "Shelley", topic: "Redox", type: "applied",
+    q: "In Na + ½Cl₂ → NaCl, identify which species is oxidised and which is reduced.",
+    a: "Na is oxidised (loses an electron → Na⁺). Cl is reduced (gains an electron → Cl⁻). Na = reducing agent, Cl = oxidising agent.",
+    distractors: ["Na is reduced; Cl is oxidised.", "Both are oxidised.", "Neither — it's an ionic bond, not redox."] },
+  { lec: "Shelley", topic: "Redox", type: "recall",
+    q: "What does redox potential (E°) measure, and what are its units?",
+    a: "The tendency of a species to gain or lose electrons. Measured in volts (V).",
+    distractors: ["The amount of electrons in a molecule, in coulombs.", "The pH of the solution.", "The energy change, in joules."] },
+  { lec: "Shelley", topic: "Redox", type: "applied",
+    q: "If a half-reaction has a NEGATIVE E°, which way does it tend to proceed?",
+    a: "Toward oxidation (the species tends to lose electrons).",
+    distractors: ["Toward reduction.", "Doesn't proceed at all.", "It depends on the temperature."] },
+  { lec: "Shelley", topic: "Redox", type: "recall",
+    q: "How does oxidation number change during oxidation vs reduction?",
+    a: "Oxidation = oxidation number INCREASES (loses electrons). Reduction = oxidation number DECREASES (gains electrons).",
+    distractors: ["Oxidation number always stays the same.", "Oxidation = decreases; reduction = increases.", "Oxidation number doubles in both cases."] },
+
+  // ============= SHELLEY: THERMODYNAMICS =============
+  { lec: "Shelley", topic: "Thermodynamics", type: "recall",
+    q: "In thermodynamics, what is the 'system' and what is the 'surroundings'?",
+    a: "System = the object/reaction being observed. Surroundings = everything else.",
+    distractors: ["System = surroundings = same thing.", "System = the lab; surroundings = outside.", "System = the chemicals; surroundings = the temperature."] },
+  { lec: "Shelley", topic: "Thermodynamics", type: "recall",
+    q: "What is enthalpy (ΔH)?",
+    a: "The change in energy associated with a chemical reaction — the heat absorbed or released.",
+    distractors: ["The total kinetic energy of all molecules.", "The disorder of the system.", "The activation energy."] },
+  { lec: "Shelley", topic: "Thermodynamics", type: "recall",
+    q: "State the First Law of Thermodynamics.",
+    a: "Energy cannot be created or destroyed — total energy and matter remain constant; they only change form.",
+    distractors: ["Energy always increases over time.", "Entropy of the universe always increases.", "Energy can be created if temperature rises."] },
+  { lec: "Shelley", topic: "Thermodynamics", type: "recall",
+    q: "State the Second Law of Thermodynamics (entropy version).",
+    a: "When energy changes form, entropy (disorder) tends to increase — randomness is more likely.",
+    distractors: ["Entropy always decreases.", "Energy can be created from nothing.", "Hot moves to cold automatically (a different statement)."] },
+  { lec: "Shelley", topic: "Thermodynamics", type: "recall",
+    q: "State the Third Law of Thermodynamics.",
+    a: "Entropy is zero only for a pure, perfectly crystalline substance at absolute zero (0 K).",
+    distractors: ["Entropy is zero at 0 °C.", "Entropy is always positive at any temperature.", "Entropy doubles every 10 °C."] },
+
+  // ============= RUSHMORE: CONFORMATIONS OF ETHANE =============
+  { lec: "Rushmore", topic: "Conformations of ethane", type: "recall",
+    q: "What are the two main conformations of ethane?",
+    a: "Staggered and eclipsed.",
+    distractors: ["Cis and trans.", "Boat and chair.", "Linear and bent."] },
+  { lec: "Rushmore", topic: "Conformations of ethane", type: "recall",
+    q: "Which is more stable: staggered or eclipsed conformation of ethane? Why?",
+    a: "Staggered — the H atoms are offset, minimising electron-cloud repulsion. Eclipsed has H atoms lined up, holding more energy.",
+    distractors: ["Eclipsed — the H atoms align in a more ordered pattern.", "Both are equally stable.", "Depends on temperature."] },
+
+  // ============= RUSHMORE: FORMULAE, CRACKING AND BRANCHING =============
+  { lec: "Rushmore", topic: "Formulae, cracking and branching", type: "recall",
+    q: "Name the 4 ways to represent a molecular formula.",
+    a: "Molecular, Structural, Display, Skeletal.",
+    distractors: ["Lewis, dot-and-cross, condensed, expanded.", "Empirical, molecular, structural, ionic.", "Sphere, ball-and-stick, space-filling, Newman."] },
+  { lec: "Rushmore", topic: "Formulae, cracking and branching", type: "applied",
+    q: "What does each kink represent in a skeletal formula?",
+    a: "One carbon atom (with implicit hydrogens to satisfy 4 bonds).",
+    distractors: ["One hydrogen atom.", "One oxygen atom.", "A bond, not an atom."] },
+  { lec: "Rushmore", topic: "Formulae, cracking and branching", type: "recall",
+    q: "What is cracking, in the context of crude oil?",
+    a: "Heating long carbon chains until C–C bonds snap, breaking them into shorter, more useful molecules.",
+    distractors: ["Adding hydrogen across double bonds.", "Burning crude oil to release heat.", "Distilling at very low temperatures."] },
+  { lec: "Rushmore", topic: "Formulae, cracking and branching", type: "applied",
+    q: "Methane has BP −164 °C; bitumen has BP ≥340 °C. Which has the longer carbon chains?",
+    a: "Bitumen — longer chains = higher boiling point = heavier.",
+    distractors: ["Methane has longer chains.", "They have the same chain length.", "Cannot tell from boiling point alone."] },
+  { lec: "Rushmore", topic: "Formulae, cracking and branching", type: "recall",
+    q: "How are the products of cracking separated from each other?",
+    a: "By weight using fractional distillation.",
+    distractors: ["By colour using filtration.", "By electric charge using electrolysis.", "Magnetism."] },
+
+  // ============= RUSHMORE: ORGANIC CHEMISTRY INTRO =============
+  { lec: "Rushmore", topic: "Organic chemistry intro", type: "recall",
+    q: "What defines an 'organic' compound?",
+    a: "A molecule containing carbon bonded to hydrogen (a C–H bond).",
+    distractors: ["Any molecule containing carbon.", "Any molecule made by a living organism.", "Any molecule with a chain longer than 4 atoms."] },
+  { lec: "Rushmore", topic: "Organic chemistry intro", type: "applied",
+    q: "Is carbonic acid (H₂CO₃) an organic compound?",
+    a: "No — it has carbon but NO C–H bond.",
+    distractors: ["Yes — it contains carbon.", "Yes — it's an acid.", "Only at high temperatures."] },
+  { lec: "Rushmore", topic: "Organic chemistry intro", type: "recall",
+    q: "Who first synthesised an organic compound from inorganic materials, and in what year?",
+    a: "Friedrich Wöhler in 1828 (he made urea: NH₄OCN → H₂NCONH₂).",
+    distractors: ["Linus Pauling in 1928.", "Antoine Lavoisier in 1789.", "Marie Curie in 1898."] },
+  { lec: "Rushmore", topic: "Organic chemistry intro", type: "recall",
+    q: "Name 4 allotropes of carbon.",
+    a: "Examples: Diamond, Graphite, Graphene, Carbon nanotubes, Buckminsterfullerene (C₆₀), Lonsdaleite, Amorphous carbon. (Any 4.)",
+    distractors: ["Methane, ethane, propane, butane.", "Hydrogen, helium, lithium, beryllium.", "Quartz, silicon, sand, glass."] },
+  { lec: "Rushmore", topic: "Organic chemistry intro", type: "recall",
+    q: "How many bonds does carbon typically form, and why?",
+    a: "4 bonds. Carbon promotes one 2s electron to the empty 2p orbital, giving it 4 unpaired electrons. The bond stability outweighs the energy cost of promotion.",
+    distractors: ["2 bonds — only the unpaired electrons.", "8 bonds — to fill its octet.", "Variable — depends on the molecule."] },
+  { lec: "Rushmore", topic: "Organic chemistry intro", type: "recall",
+    q: "How many bonds do N, O, and H typically form?",
+    a: "N forms 3 bonds, O forms 2 bonds, H forms 1 bond.",
+    distractors: ["N forms 5, O forms 6, H forms 1.", "All three form 4 bonds like carbon.", "N forms 2, O forms 3, H forms 2."] },
+  { lec: "Rushmore", topic: "Organic chemistry intro", type: "recall",
+    q: "What's the general formula of an alkane?",
+    a: "CₙH₂ₙ₊₂ (saturated, no double bonds).",
+    distractors: ["CₙH₂ₙ.", "CₙHₙ.", "CₙH₂ₙ₋₂."] },
+  { lec: "Rushmore", topic: "Organic chemistry intro", type: "recall",
+    q: "What's the general formula of a cycloalkane?",
+    a: "CₙH₂ₙ.",
+    distractors: ["CₙH₂ₙ₊₂.", "CₙH₂ₙ₋₂.", "CₙHₙ."] },
+  { lec: "Rushmore", topic: "Organic chemistry intro", type: "applied",
+    q: "What is the molecular formula of butane?",
+    a: "C₄H₁₀.",
+    distractors: ["C₃H₈.", "C₅H₁₂.", "C₄H₈."] },
+  { lec: "Rushmore", topic: "Organic chemistry intro", type: "recall",
+    q: "What is a homologous series?",
+    a: "A family of compounds sharing the same general formula and functional group, with similar reactions and gradually changing physical properties as the chain lengthens.",
+    distractors: ["Compounds that all have the same molecular weight.", "Compounds that all melt at the same temperature.", "Random compounds grouped by colour."] },
+  { lec: "Rushmore", topic: "Organic chemistry intro", type: "recall",
+    q: "What is the prefix for a 7-carbon chain?",
+    a: "Hept– (heptane is C₇H₁₆).",
+    distractors: ["Hex– (6 carbons).", "Oct– (8 carbons).", "Pent– (5 carbons)."] },
+
+  // ============= RUSHMORE: POLAR VS NON-POLAR =============
+  { lec: "Rushmore", topic: "Polar vs non-polar", type: "recall",
+    q: "Define electronegativity.",
+    a: "How strongly an atom pulls bonding electrons toward itself.",
+    distractors: ["The total charge of an atom.", "The number of valence electrons.", "How many bonds an atom can form."] },
+  { lec: "Rushmore", topic: "Polar vs non-polar", type: "applied",
+    q: "If two bonded atoms have very similar electronegativities, is the bond polar or non-polar?",
+    a: "Non-polar — the electrons are shared roughly equally.",
+    distractors: ["Polar — there's still a small difference.", "Ionic — they always form ions.", "Cannot tell without knowing the elements."] },
+  { lec: "Rushmore", topic: "Polar vs non-polar", type: "recall",
+    q: "Will polar molecules dissolve in oil?",
+    a: "No — 'like dissolves like'. Polar dissolves in polar (e.g., water); non-polar dissolves in non-polar (e.g., oil).",
+    distractors: ["Yes — all liquids mix.", "Yes — but only at high temperatures.", "Only polar covalent compounds dissolve in oil."] },
+
+  // ============= VICKY: INTRODUCTION =============
+  { lec: "Vicky", topic: "Introduction", type: "recall",
+    q: "On the periodic table, do groups go across rows or down columns?",
+    a: "Groups go DOWN columns. Periods go ACROSS rows.",
+    distractors: ["Groups go across rows; periods go down columns.", "Both go down columns.", "It depends on the element."] },
+  { lec: "Vicky", topic: "Introduction", type: "recall",
+    q: "What are nucleons?",
+    a: "Protons and neutrons (the particles inside the nucleus).",
+    distractors: ["Just protons.", "Just neutrons.", "Protons, neutrons, and electrons."] },
+  { lec: "Vicky", topic: "Introduction", type: "recall",
+    q: "Define atomic number and atomic mass.",
+    a: "Atomic number = number of protons (= electrons in a neutral atom). Atomic mass = mass of protons + neutrons.",
+    distractors: ["Atomic number = total electrons; atomic mass = total bonds.", "Atomic number = neutrons; atomic mass = protons.", "Both refer to the same property."] },
+  { lec: "Vicky", topic: "Introduction", type: "recall",
+    q: "What is an isotope?",
+    a: "Atoms with the same number of protons (and electrons) but a different number of neutrons. Same atomic number, different atomic mass.",
+    distractors: ["Atoms with extra electrons.", "Atoms with extra protons.", "Atoms in an excited state."] },
+  { lec: "Vicky", topic: "Introduction", type: "recall",
+    q: "What is half-life (t₁/₂)?",
+    a: "The time required for half the initial number of nuclides in a radioactive sample to decay.",
+    distractors: ["The time to decay completely.", "The time it takes for atoms to double.", "Half the lifetime of the element."] },
+  { lec: "Vicky", topic: "Introduction", type: "applied",
+    q: "1000 atoms of an isotope are present in 2000. The half-life is 10 years. How many remain in 2030?",
+    a: "125 atoms. (2000→1000, 2010→500, 2020→250, 2030→125.)",
+    distractors: ["250 atoms.", "500 atoms.", "62 atoms."] },
+  { lec: "Vicky", topic: "Introduction", type: "applied",
+    q: "Are nuclides with SHORT half-lives more or less stable than those with long half-lives?",
+    a: "LESS stable — short half-lives = more intensely radioactive ('hotter').",
+    distractors: ["More stable — they decay faster, so they reach a stable state quickly.", "Equally stable.", "Stability has nothing to do with half-life."] },
+
+  // ============= VICKY: RADIATION =============
+  { lec: "Vicky", topic: "Radiation", type: "recall",
+    q: "Name the 3 main types of radiation.",
+    a: "Alpha (α), Beta (β), Gamma (γ).",
+    distractors: ["UV, X-ray, microwave.", "Ionic, covalent, metallic.", "Heat, light, sound."] },
+  { lec: "Vicky", topic: "Radiation", type: "recall",
+    q: "What IS an alpha particle, in terms of subatomic composition?",
+    a: "2 protons + 2 neutrons (a helium-4 nucleus, He⁴).",
+    distractors: ["1 electron.", "1 proton.", "A high-energy photon."] },
+  { lec: "Vicky", topic: "Radiation", type: "applied",
+    q: "When an atom emits an alpha particle, what happens to its atomic mass and atomic number?",
+    a: "Atomic mass drops by 4 (loses 2p + 2n). Atomic number drops by 2.",
+    distractors: ["Atomic mass drops by 2; atomic number drops by 4.", "Both drop by 1.", "Both increase by 2."] },
+  { lec: "Vicky", topic: "Radiation", type: "recall",
+    q: "What IS a beta particle?",
+    a: "An electron emitted from the nucleus when a neutron splits into a proton + electron.",
+    distractors: ["A photon.", "A proton.", "A helium nucleus."] },
+  { lec: "Vicky", topic: "Radiation", type: "applied",
+    q: "When beta decay occurs, what happens to atomic mass and atomic number?",
+    a: "Atomic mass stays the same. Atomic number INCREASES by 1 (a neutron became a proton).",
+    distractors: ["Mass drops by 4, number drops by 2.", "Mass increases by 1, number stays the same.", "Both drop by 1."] },
+  { lec: "Vicky", topic: "Radiation", type: "recall",
+    q: "What is gamma radiation, physically?",
+    a: "Short-wavelength electromagnetic radiation — a stream of high-energy photons.",
+    distractors: ["A stream of helium nuclei.", "A stream of fast-moving electrons.", "Sound waves at high frequency."] },
+  { lec: "Vicky", topic: "Radiation", type: "recall",
+    q: "Order alpha, beta, and gamma radiation by their ability to penetrate materials (least to most).",
+    a: "Alpha (least, stopped by skin) < Beta (more) < Gamma (most, can pass through the body).",
+    distractors: ["Gamma < Beta < Alpha.", "Beta < Alpha < Gamma.", "All penetrate equally."] },
+  { lec: "Vicky", topic: "Radiation", type: "applied",
+    q: "Why is alpha radiation dangerous if INGESTED, even though it can't penetrate skin?",
+    a: "Inside the body it can deposit all its (high) energy into nearby tissues, causing serious local damage.",
+    distractors: ["Because it transforms into gamma inside the body.", "Because it disrupts DNA only when swallowed.", "It actually isn't dangerous if ingested."] },
+  { lec: "Vicky", topic: "Radiation", type: "recall",
+    q: "What makes a nucleus 'stable'?",
+    a: "Roughly equal numbers of protons and neutrons (N:P close to 1). Even numbers of both also helps. Stable nuclei usually have N ≥ P.",
+    distractors: ["Lots of protons and very few neutrons.", "An odd number of nucleons.", "Just being a noble gas."] },
+
+  // ============= VICKY: MEASURING RADIATION =============
+  { lec: "Vicky", topic: "Measuring radiation", type: "recall",
+    q: "Name 3 methods used to measure radiation.",
+    a: "Ionisation of gases; Excitation of liquids or solids; Induction of chemical change.",
+    distractors: ["Reflection of light, refraction of waves, transmission of sound.", "Boiling, freezing, condensation.", "Magnetism, electrolysis, capillary action."] },
+  { lec: "Vicky", topic: "Measuring radiation", type: "recall",
+    q: "How does a Geiger-Müller tube work?",
+    a: "Inert gas inside is ionised by passing radiation; freed electrons fly to the anode, creating a measurable electric current.",
+    distractors: ["A magnet deflects the radiation onto a sensor.", "A fluorescent screen lights up when hit.", "The radiation heats up a resistor."] },
+  { lec: "Vicky", topic: "Measuring radiation", type: "recall",
+    q: "Name 3 sources of background radiation.",
+    a: "Cosmic rays, rocks and soil, medical pollution, nuclear plants. (Any 3.)",
+    distractors: ["Tap water, sunlight, kitchen appliances.", "Phones, microwaves, computers.", "Plants, food, air."] },
+
+  // ============= VICKY: NUCLEAR MEDICINE =============
+  { lec: "Vicky", topic: "Nuclear medicine", type: "recall",
+    q: "What is nuclear medicine, in one sentence?",
+    a: "The use of radiation properties to help with diagnosis and treatment of disease — often by pinpointing molecular activity in the body.",
+    distractors: ["The study of nuclear power plants.", "The use of nuclear weapons in warfare.", "The chemistry of atomic nuclei."] },
+  { lec: "Vicky", topic: "Nuclear medicine", type: "recall",
+    q: "Name 3 ways radiotracers can be introduced into the body.",
+    a: "Injection, swallowed, inhaled.",
+    distractors: ["Skin patch, IV drip, surgical implant.", "Eye drops, ear drops, nasal spray.", "X-ray, MRI, ultrasound."] },
+  { lec: "Vicky", topic: "Nuclear medicine", type: "recall",
+    q: "What does anatomical imaging use, and what radiation property does it rely on?",
+    a: "An external radiation source. Uses the penetrating properties of gamma rays to show how organs look.",
+    distractors: ["Alpha radiation injected into the body.", "Beta particles aimed at the surface.", "Visible light reflected off organs."] },
+  { lec: "Vicky", topic: "Nuclear medicine", type: "recall",
+    q: "Name examples of physiological imaging techniques.",
+    a: "Scintigraphy, PET, SPECT.",
+    distractors: ["MRI, CT, ultrasound.", "Endoscopy, colonoscopy, x-ray.", "Microscopy, spectroscopy, chromatography."] },
+
+  // ============= VICKY: ALCOHOLS =============
+  { lec: "Vicky", topic: "Alcohols", type: "recall",
+    q: "What functional group defines an alcohol?",
+    a: "The hydroxyl group (–OH) attached to a carbon.",
+    distractors: ["The carbonyl group (C=O).", "The amine group (–NH₂).", "The carboxyl group (–COOH)."] },
+  { lec: "Vicky", topic: "Alcohols", type: "recall",
+    q: "What suffix is added to the parent alkane name to form an alcohol?",
+    a: "-ol (e.g., methanol, ethanol).",
+    distractors: ["-al (that's an aldehyde).", "-one (that's a ketone).", "-oic (that's a carboxylic acid)."] },
+  { lec: "Vicky", topic: "Alcohols", type: "applied",
+    q: "What is the structural formula of 1-propanol?",
+    a: "CH₃CH₂CH₂OH.",
+    distractors: ["CH₃CH₂OH (that's ethanol).", "CH₃OH (that's methanol).", "CH₃CH(OH)CH₃ (that's 2-propanol)."] },
+  { lec: "Vicky", topic: "Alcohols", type: "recall",
+    q: "Why is alcohol soluble in water?",
+    a: "The –OH group forms hydrogen bonds with water.",
+    distractors: ["Because it boils at low temperature.", "Because it is a non-polar molecule.", "Because it ionises in water like a salt."] },
+  { lec: "Vicky", topic: "Alcohols", type: "recall",
+    q: "How is methanol industrially produced from carbon monoxide?",
+    a: "Catalytic hydrogenation: CO + 2H₂ → CH₃OH.",
+    distractors: ["Fermentation of glucose.", "Oxidation of methane.", "Cracking of crude oil."] },
+  { lec: "Vicky", topic: "Alcohols", type: "recall",
+    q: "How is ethanol mass-produced?",
+    a: "By fermentation — yeast ferments glucose: C₆H₁₂O₆ → 2CH₃CH₂OH + 2CO₂.",
+    distractors: ["By cracking diesel.", "By electrolysis of water.", "By burning natural gas."] },
+  { lec: "Vicky", topic: "Alcohols", type: "recall",
+    q: "What is the difference between a primary, secondary, and tertiary alcohol?",
+    a: "It depends on how many CARBON groups (R) are attached to the carbon bearing the –OH. Primary = 1 R, secondary = 2 R, tertiary = 3 R.",
+    distractors: ["Number of OH groups: 1, 2, 3.", "Number of carbons in the chain.", "Position of the OH on the chain."] },
+  { lec: "Vicky", topic: "Alcohols", type: "applied",
+    q: "Is ethanol (CH₃CH₂OH) a primary, secondary, or tertiary alcohol?",
+    a: "Primary — only one carbon (CH₃) is attached to the carbon that holds the OH.",
+    distractors: ["Secondary.", "Tertiary.", "Quaternary."] },
+  { lec: "Vicky", topic: "Alcohols", type: "applied",
+    q: "Is 2-methyl-2-propanol [(CH₃)₃COH] primary, secondary, or tertiary?",
+    a: "Tertiary — three carbon groups (3 × CH₃) are attached to the carbon bearing OH.",
+    distractors: ["Primary.", "Secondary.", "Quaternary."] },
+  { lec: "Vicky", topic: "Alcohols", type: "recall",
+    q: "What are structural isomers?",
+    a: "Compounds with the same molecular formula but with the atoms connected in a different way.",
+    distractors: ["Compounds with the same molecular formula AND same connectivity.", "Compounds with different elemental composition.", "Mirror-image compounds."] },
+
+  // ============= VICKY: AMINES AND PEPTIDES =============
+  { lec: "Vicky", topic: "Amines and peptides", type: "recall",
+    q: "What is an amine, structurally?",
+    a: "An ammonia molecule (NH₃) where one or more H atoms have been replaced by carbon (R) groups.",
+    distractors: ["Any compound containing nitrogen.", "An alcohol with N instead of O.", "A peptide bond between amino acids."] },
+  { lec: "Vicky", topic: "Amines and peptides", type: "recall",
+    q: "What's the difference between primary, secondary, and tertiary amines?",
+    a: "Primary = 1 R group on N (RNH₂). Secondary = 2 R groups (R₂NH). Tertiary = 3 R groups (R₃N).",
+    distractors: ["Difference is the number of nitrogens.", "Difference is the size of the R groups.", "Difference is the number of OH groups attached."] },
+  { lec: "Vicky", topic: "Amines and peptides", type: "applied",
+    q: "Which amines can hydrogen-bond, and why?",
+    a: "Primary and secondary amines — they have an N–H bond, which is needed for H-bonding. Tertiary amines have no N–H, so they don't H-bond between molecules.",
+    distractors: ["All three types — N attracts H regardless.", "Only tertiary amines.", "Only primary amines."] },
+  { lec: "Vicky", topic: "Amines and peptides", type: "recall",
+    q: "What are the three structural components of an amino acid?",
+    a: "An amino group (–NH₂), a carboxyl group (–COOH), and a side chain (R group).",
+    distractors: ["Only an amino group and an R group.", "An OH group, an N atom, and an R group.", "A carbonyl, a hydroxyl, and an R group."] },
+  { lec: "Vicky", topic: "Amines and peptides", type: "recall",
+    q: "How is a peptide bond formed?",
+    a: "Between the amino group (–NH₂) of one amino acid and the carboxyl group (–COOH) of another, releasing H₂O.",
+    distractors: ["By two carboxyl groups joining and releasing CO₂.", "By two amino groups joining and releasing NH₃.", "By a redox reaction between two side chains."] },
+
+  // ============= VICKY: CARBONYL & CARBOXYL COMPOUNDS =============
+  { lec: "Vicky", topic: "Carbonyl and Carboxyl Compounds", type: "recall",
+    q: "What is a carbonyl group?",
+    a: "A carbon double-bonded to an oxygen (C=O).",
+    distractors: ["A carbon single-bonded to an OH.", "A carbon triple-bonded to a nitrogen.", "Two carbons double-bonded together."] },
+  { lec: "Vicky", topic: "Carbonyl and Carboxyl Compounds", type: "applied",
+    q: "What's the difference between an aldehyde and a ketone?",
+    a: "Aldehyde = carbonyl C bonded to at least one H. Ketone = carbonyl C bonded to two other carbons.",
+    distractors: ["Aldehydes have OH; ketones have NH.", "Aldehydes are saturated; ketones are unsaturated.", "Aldehydes are gases; ketones are liquids."] },
+  { lec: "Vicky", topic: "Carbonyl and Carboxyl Compounds", type: "recall",
+    q: "What suffix is used to name an aldehyde, and a ketone?",
+    a: "Aldehyde = –al (e.g., methanal, propanal). Ketone = –one (e.g., propanone) — with a locator number for ketones.",
+    distractors: ["Aldehyde = –one; ketone = –al.", "Both use –ol.", "Aldehyde = –oic; ketone = –ate."] },
+  { lec: "Vicky", topic: "Carbonyl and Carboxyl Compounds", type: "recall",
+    q: "Why can carbonyl compounds form hydrogen bonds with water?",
+    a: "The C=O group is polar AND has a free electron pair on the oxygen, which can accept H-bonds from water.",
+    distractors: ["Because they have an OH group.", "Because they contain nitrogen.", "Because they are non-polar."] },
+  { lec: "Vicky", topic: "Carbonyl and Carboxyl Compounds", type: "recall",
+    q: "What is the functional group of a carboxylic acid, and what suffix names it?",
+    a: "–COOH (a carbonyl plus a hydroxyl). Suffix: –oic acid (e.g., propanoic acid).",
+    distractors: ["–OH; suffix –ol.", "C=O; suffix –one.", "–NH₂; suffix –amine."] },
+  { lec: "Vicky", topic: "Carbonyl and Carboxyl Compounds", type: "recall",
+    q: "How does carboxylic acid solubility change with chain length?",
+    a: "Smaller carboxylic acids are soluble in water; larger ones become less soluble as the non-polar carbon chain grows.",
+    distractors: ["All carboxylic acids are equally soluble.", "Larger ones become more soluble.", "Solubility depends only on temperature, not chain length."] },
+];
+
+// =====================================================================
+// APP STATE
+// =====================================================================
+let mode = "flashcard";   // or "quiz"
+let activeLecturers = new Set(); // empty = all
+let activeTopics = new Set();    // empty = all
+let activeDifficulty = "all";    // or "recall" / "applied"
+let pool = [];          // filtered + shuffled questions
+let pos = 0;
+let answered = false;
+let stats = { correct: 0, wrong: 0, seen: 0 };
+
+// Build lecturer/topic indexes
+const LECTURERS = [...new Set(QUESTIONS.map(q => q.lec))];
+const TOPICS_BY_LEC = {};
+LECTURERS.forEach(l => TOPICS_BY_LEC[l] = [...new Set(QUESTIONS.filter(q => q.lec === l).map(q => q.topic))]);
+const ALL_TOPICS = [...new Set(QUESTIONS.map(q => q.topic))];
+
+// =====================================================================
+// RENDERING
+// =====================================================================
+function $(id) { return document.getElementById(id); }
+
+function renderChips() {
+  const lecCont = $("lecturer-chips");
+  lecCont.innerHTML = "";
+  LECTURERS.forEach(l => {
+    const b = document.createElement("button");
+    b.className = `chip lecturer-${l.toLowerCase()}` + (activeLecturers.has(l) ? " active" : "");
+    b.textContent = l + ` (${QUESTIONS.filter(q => q.lec === l).length})`;
+    b.onclick = () => {
+      if (activeLecturers.has(l)) activeLecturers.delete(l);
+      else activeLecturers.add(l);
+      // Remove topic filters that no longer apply
+      [...activeTopics].forEach(t => {
+        const lecOfTopic = QUESTIONS.find(q => q.topic === t).lec;
+        if (activeLecturers.size > 0 && !activeLecturers.has(lecOfTopic)) activeTopics.delete(t);
+      });
+      rebuild();
+    };
+    lecCont.appendChild(b);
+  });
+
+  const topicCont = $("topic-chips");
+  topicCont.innerHTML = "";
+  // Show topics for the active lecturers (or all if none selected)
+  let topicsToShow = activeLecturers.size === 0
+    ? ALL_TOPICS
+    : ALL_TOPICS.filter(t => activeLecturers.has(QUESTIONS.find(q => q.topic === t).lec));
+  topicsToShow.forEach(t => {
+    const b = document.createElement("button");
+    b.className = "chip" + (activeTopics.has(t) ? " active" : "");
+    b.textContent = t;
+    b.onclick = () => {
+      if (activeTopics.has(t)) activeTopics.delete(t);
+      else activeTopics.add(t);
+      rebuild();
+    };
+    topicCont.appendChild(b);
+  });
+
+  // Difficulty chips
+  document.querySelectorAll('#difficulty-chips .chip').forEach(c => {
+    c.classList.toggle("active", c.dataset.diff === activeDifficulty);
+    c.onclick = () => { activeDifficulty = c.dataset.diff; rebuild(); };
+  });
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function rebuild() {
+  pool = QUESTIONS.filter(q => {
+    if (activeLecturers.size > 0 && !activeLecturers.has(q.lec)) return false;
+    if (activeTopics.size > 0 && !activeTopics.has(q.topic)) return false;
+    if (activeDifficulty !== "all" && q.type !== activeDifficulty) return false;
+    return true;
+  });
+  pool = shuffle(pool);
+  pos = 0;
+  answered = false;
+  renderChips();
+  renderCard();
+}
+
+function renderStats() {
+  $("stat-pos").textContent = pool.length === 0 ? "0/0" : `${pos + 1}/${pool.length}`;
+  $("stat-correct").textContent = stats.correct;
+  $("stat-wrong").textContent = stats.wrong;
+  const total = stats.correct + stats.wrong;
+  $("stat-acc").textContent = total === 0 ? "—" : Math.round(100 * stats.correct / total) + "%";
+  $("progress").style.width = (pool.length === 0 ? 0 : ((pos + 1) / pool.length * 100)) + "%";
+}
+
+function renderCard() {
+  renderStats();
+  const area = $("card-area");
+  if (pool.length === 0) {
+    area.innerHTML = `<div class="empty">No questions match your filters. Try clearing some.</div>`;
+    return;
+  }
+  const q = pool[pos];
+  const lecTagClass = `tag lec-${q.lec.toLowerCase()}`;
+
+  if (mode === "flashcard") {
+    area.innerHTML = `
+      <div class="meta-row">
+        <span class="${lecTagClass}">${q.lec}</span>
+        <span class="tag">${q.topic}</span>
+        <span class="tag ${q.type}">${q.type}</span>
+      </div>
+      <div class="question">${escapeHtml(q.q)}</div>
+      <div id="ans" class="answer-box hidden">${escapeHtml(q.a)}</div>
+      <div class="actions" id="card-actions">
+        <button class="btn" id="reveal">Show answer</button>
+        <button class="btn ghost" id="next-only">Skip →</button>
+      </div>
+    `;
+    $("reveal").onclick = () => {
+      $("ans").classList.remove("hidden");
+      $("card-actions").innerHTML = `
+        <button class="btn good" id="got-it">Got it ✓</button>
+        <button class="btn bad" id="missed-it">Missed it ✗</button>
+        <button class="btn ghost" id="next-only">Next →</button>
+      `;
+      $("got-it").onclick = () => { stats.correct++; advance(); };
+      $("missed-it").onclick = () => { stats.wrong++; advance(); };
+      $("next-only").onclick = () => advance();
+    };
+    $("next-only").onclick = () => advance();
+  } else {
+    // Quiz mode (multiple choice)
+    const opts = shuffle([q.a, ...(q.distractors || [])]);
+    area.innerHTML = `
+      <div class="meta-row">
+        <span class="${lecTagClass}">${q.lec}</span>
+        <span class="tag">${q.topic}</span>
+        <span class="tag ${q.type}">${q.type}</span>
+      </div>
+      <div class="question">${escapeHtml(q.q)}</div>
+      <div class="options" id="opts">
+        ${opts.map((o, i) => `<button class="option" data-val="${escapeAttr(o)}">${escapeHtml(o)}</button>`).join("")}
+      </div>
+      <div class="feedback" id="fb"></div>
+      <div class="actions">
+        <button class="btn" id="next">Next →</button>
+      </div>
+    `;
+    answered = false;
+    document.querySelectorAll('#opts .option').forEach(btn => {
+      btn.onclick = () => {
+        if (answered) return;
+        answered = true;
+        const val = btn.dataset.val;
+        const correct = (val === q.a);
+        document.querySelectorAll('#opts .option').forEach(b => {
+          b.disabled = true;
+          if (b.dataset.val === q.a) b.classList.add("correct");
+          else if (b === btn) b.classList.add("wrong");
+        });
+        const fb = $("fb");
+        if (correct) {
+          stats.correct++;
+          fb.textContent = "Correct ✓";
+          fb.className = "feedback good";
+        } else {
+          stats.wrong++;
+          fb.textContent = "Not quite. Correct answer is highlighted.";
+          fb.className = "feedback bad";
+        }
+        renderStats();
+      };
+    });
+    $("next").onclick = () => advance();
+  }
+}
+
+function advance() {
+  pos = (pos + 1) % pool.length;
+  if (pos === 0) pool = shuffle(pool); // reshuffle on wrap
+  renderCard();
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+}
+function escapeAttr(s) { return escapeHtml(s); }
+
+// =====================================================================
+// EVENT WIRING
+// =====================================================================
+$("mode-flashcard").onclick = () => {
+  mode = "flashcard";
+  $("mode-flashcard").classList.add("active");
+  $("mode-quiz").classList.remove("active");
+  renderCard();
+};
+$("mode-quiz").onclick = () => {
+  mode = "quiz";
+  $("mode-quiz").classList.add("active");
+  $("mode-flashcard").classList.remove("active");
+  renderCard();
+};
+$("shuffle-btn").onclick = () => { pool = shuffle(pool); pos = 0; renderCard(); };
+$("reset-btn").onclick = () => {
+  stats = { correct: 0, wrong: 0, seen: 0 };
+  pos = 0;
+  pool = shuffle(pool);
+  renderCard();
+};
+
+// Initial render
+rebuild();
+</script>
+</body>
+</html>
